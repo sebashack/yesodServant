@@ -6,4 +6,4 @@ import Network.Wai.Handler.Warp (run)
 
 
 main :: IO ()
-main = toWaiApp YesodServantApp >>= run 3000
+main = toWaiApp (YesodServantApp ServantSub) >>= run 3000

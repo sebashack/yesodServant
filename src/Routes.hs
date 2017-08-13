@@ -1,8 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeFamilies      #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE QuasiQuotes           #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 
 module Routes where
 
@@ -10,7 +13,9 @@ import Data.Aeson
 import Data.Text (Text)
 import GHC.Generics
 import Yesod.Core
+import Yesod.Core.Types (YesodSubRunnerEnv(..))
 import Servant.API (servantApp)
+import Network.Wai (pathInfo)
 
 
 data User = User {
@@ -24,12 +29,25 @@ instance FromJSON User
 instance ToJSON User
 
 
--- | Yesod App with Servant SubSite
+-- | Servant Subsite
+data ServantSub = ServantSub
 
-data YesodServantApp = YesodServantApp
+mkYesodSubData "ServantSub" [parseRoutes|
+/ SubRootR GET
+|]
+
+instance Yesod site => YesodSubDispatch ServantSub (HandlerT site IO) where
+  yesodSubDispatch _ = servantApp
+
+-- | Yesod Main Site with Servant SubSite
+
+newtype YesodServantApp = YesodServantApp {
+  getServantSub :: ServantSub
+  }
 
 mkYesod "YesodServantApp" [parseRoutes|
 / RootR GET
+/servantApi SubsiteR ServantSub getServantSub
 |]
 instance Yesod YesodServantApp
 

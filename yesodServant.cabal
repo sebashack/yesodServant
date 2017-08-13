@@ -23,6 +23,7 @@ library
                      , servant-server
                      , aeson
                      , text
+                     , wai
   default-language:    Haskell2010
 
 executable runApp
